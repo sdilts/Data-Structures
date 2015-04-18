@@ -6,4 +6,8 @@
 *.exe
 *.o
 *.so
- 
+
+# Backup files #
+################
+*.java~
+*.java#
