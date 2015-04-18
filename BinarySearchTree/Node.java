@@ -1,3 +1,4 @@
+package binarySearchTree;
 /**
  *
  * @author yaw
