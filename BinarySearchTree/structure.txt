@@ -1,8 +1,9 @@
 About
 -------
-I'm having problems deciding the package/inheriteince structure for this
-project. There definately should be a binarySearchTree package, but
-beyond that, I have do not know:
+As this is my first attempt at using inheritence for abstraction and
+code reuse on a semi-large scale, the inheritance structure has been a
+little rough. I hope I won't run out of time to build all of these
+implemetations.
 
 Current
 --------
