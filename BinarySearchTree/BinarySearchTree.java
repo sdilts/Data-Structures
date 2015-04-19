@@ -1,3 +1,4 @@
+
 package binarySearchTree;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -8,14 +9,58 @@ import java.util.Stack;
  * 
  * @author sdilts
  */
-public class BinarySearchTree<E extends Comparable> {
+public class BinarySearchTree<T extends Comparable> {
+
+    protected static class Node<E extends Comparable> {
+
+	private E value;
+	private Node<E> left;
+	private Node<E> right;
+	private Node<E> parent;
+
+	public Node(E value) {
+	    this.value = value;
+	}
+
+	public E getValue() {
+	    return value;
+	}
+    
+	public void setValue(E value) {
+	    this.value = value;
+	}
+
+	public void setLeft(Node<E> left) {
+	    this.left = left;
+	}
+
+	public Node<E> getLeft() {
+	    return left;
+	}
+
+	public void setRight(Node<E> right) {
+	    this.right = right;
+	}
+
+	public Node<E> getRight() {
+	    return right;
+	}
+
+	public void setParent(Node parent) {
+	    this.parent = parent;
+	}
+
+	public Node<E> getParent() {
+	    return parent;
+	}
+    }//------------END OF NODE CLASS------------
 
     //allows us to change behavior of general methods:
-    protected Node<E> createNode(E e) {
-	return new Node<E>(e);
+    protected Node<T> createNode(T e) {
+	return new Node<T>(e);
     }
 
-    private Node<E> root;
+    protected Node<T> root;
     private int size;
 
     /**
@@ -30,7 +75,7 @@ public class BinarySearchTree<E extends Comparable> {
      *
      * @param newValue the value to be added to the tree.
      */
-    public void insert(E newValue) {
+    public void insert(T newValue) {
         if (root == null) {
             root = createNode(newValue);
         } else {
@@ -60,13 +105,13 @@ public class BinarySearchTree<E extends Comparable> {
     }
 
     /**
-     * Returns the Node below current with the given value.
+     * Returns the Node below top with the given value.
      *
      * @param top the Node to start at when searching for value.
      * @param search the value for which to search for.
      * @return the node with the value of search
      */
-    public Node lookupNode(Node top, E search) {
+    public Node lookupNode(Node top, T search) {
 	if(top == null) {
 	    return null;
 	} else if(search.compareTo(top.getValue()) < 0) {
@@ -77,12 +122,20 @@ public class BinarySearchTree<E extends Comparable> {
     }	    
 
     /**
+     * Returns the Node with the given value
+     * @param search the value for which to search for
+     */
+    public Node getNode(T search) {
+	return lookupNode(root, search);
+    }
+
+    /**
      * Removes the first node with the given value from the tree.
      *
      * @param value the value used to find the node to be removed
      * @return true if an valid node is found and removed
      */
-    public boolean remove(E value) {
+    public boolean remove(T value) {
 	Node remove = lookupNode(root, value);
 	return remove(remove);
     }
@@ -156,7 +209,7 @@ public class BinarySearchTree<E extends Comparable> {
      * @param toChange the current value of the node that is to be modified
      * @param newValue the value that the node will be changed to.
      */
-    public void modify(E toChange, E newValue) {
+    public void modify(T toChange, T newValue) {
 	Node mod = lookupNode(root, toChange);
 	if(mod != null) {
 	    mod.setValue(newValue);
@@ -170,12 +223,12 @@ public class BinarySearchTree<E extends Comparable> {
      * @return true if the tree is a valid binary search tree
      */
     public boolean isBST() {
-	LinkedList<E> treeList =  getTreeList(root);
+	LinkedList<T> treeList =  getTreeList(root);
 	Iterator it = treeList.iterator();
 	if(it.hasNext()) {
-	    E prev = (E) it.next();
+	    T prev = (T) it.next();
 	    while(it.hasNext()) {
-		E cur = (E) it.next();
+		T cur = (T) it.next();
 		if(prev.compareTo(cur) > 0) {
 		    return false;
 		} else {
@@ -193,12 +246,12 @@ public class BinarySearchTree<E extends Comparable> {
      * @param current the top node of the tree to be given as a linked list
      * @return An ordered linked list of the data in the tree
      */
-    public LinkedList<E> getTreeList(Node current) {
-	LinkedList<E> list = new LinkedList<E>();
+    public LinkedList<T> getTreeList(Node current) {
+	LinkedList<T> list = new LinkedList<T>();
 	if(current.getLeft() != null) {
 	    list.addAll(getTreeList(current.getLeft()));
 	}
-	list.add((E)current.getValue());
+	list.add((T)current.getValue());
 	if(current.getRight() != null) {
 	    list.addAll(getTreeList(current.getRight()));
 	}
@@ -215,7 +268,7 @@ public class BinarySearchTree<E extends Comparable> {
      * @throws IllegalArgumentException thrown when the given array is smaller than the size of the tree.
      * @param array the array that the tree will be copied to
      */
-    public void copyToArray(E[] array) {
+    public void copyToArray(T[] array) {
 	if(array.length < size) {
 	    throw new IllegalArgumentException("array passed to copyToArray(E[]) must be/nthe same size or larger than the size of the tree.");
 	} else {
@@ -228,7 +281,7 @@ public class BinarySearchTree<E extends Comparable> {
 		    current = current.getLeft();
 		} else {
 		    current = (Node) stack.pop();
-		    array[index] = (E) current.getValue();
+		    array[index] = (T) current.getValue();
 		    index++;
 		    current = current.getRight();
 		}
