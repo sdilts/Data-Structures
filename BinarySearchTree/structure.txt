@@ -1,0 +1,43 @@
+About
+-------
+I'm having problems deciding the package/inheriteince structure for this
+project. There definately should be a binarySearchTree package, but
+beyond that, I have do not know:
+
+Current
+--------
+BinarySearchTree - Node     
+	\
+	 \
+      AbstractBalanceableTree - BalNode
+		/
+	       /
+	  AVLTree
+
+Probable
+----------
+
+	AbstractBinarySearchTree - Node
+		/          \
+	       /            \
+    	      BST   	  AbstractBalanceableTree - BalNode
+				/       \
+			       /         \
+			  AVLTree       RBTree
+
+Details
+--------
+AbstractBinarySearchTree
+  -implements get methods, conversion methods, and the Node class
+BST
+  -implements insert(), remove()
+
+BalanceableAbstractTree
+  -implements rotate, restructure, and BalNode
+
+AVLTree
+  -implements an AVL tree
+RBTree
+  -implements a Red-black tree
+
+
