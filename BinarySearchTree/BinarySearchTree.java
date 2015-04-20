@@ -22,6 +22,10 @@ public class BinarySearchTree<T extends Comparable> {
 	    this.value = value;
 	}
 
+	public int compareTo(Node compare) {
+	    return this.getValue().compareTo(compare.getValue()); 
+	}
+
 	public E getValue() {
 	    return value;
 	}
@@ -75,34 +79,41 @@ public class BinarySearchTree<T extends Comparable> {
      *
      * @param newValue the value to be added to the tree.
      */
-    public void insert(T newValue) {
-        if (root == null) {
-            root = createNode(newValue);
-        } else {
-            Node currentNode = root;
-            boolean placed = false;
-            while (!placed) {
-                if (newValue.compareTo(currentNode.getValue()) < 0) {
-                    if (currentNode.getLeft() == null) {
-                        currentNode.setLeft(createNode(newValue));
-                        currentNode.getLeft().setParent(currentNode);
-                        placed = true;
-                    } else {
-                        currentNode = currentNode.getLeft();
-                    }
-                } else {
-                    if (currentNode.getRight() == null) {
-                        currentNode.setRight(createNode(newValue));
-                        currentNode.getRight().setParent(currentNode);
-                        placed = true;
-                    } else {
-                        currentNode = currentNode.getRight();
-                    }
-                }
-            }
-        }
+    public void insert(T value) {
+	insertNode(createNode(value));
+    }
+
+    protected void insertNode(Node newNode) {
+	if (root == null) {
+	    root = newNode;
+	} else {
+	    Node currentNode = root;
+	    boolean placed = false;
+	    while (!placed) {
+		if (newNode.compareTo(currentNode) < 0) {
+		    if (currentNode.getLeft() == null) {
+			currentNode.setLeft(newNode);
+			currentNode.getLeft().setParent(currentNode);
+			placed = true;
+		    } else {
+			currentNode = currentNode.getLeft();
+		    }
+		} else {
+		    if (currentNode.getRight() == null) {
+			currentNode.setRight(newNode);
+			currentNode.getRight().setParent(currentNode);
+			placed = true;
+		    } else {
+			currentNode = currentNode.getRight();
+		    }
+		}
+	    }
+	}
 	size++;
     }
+
+
+	
 
     /**
      * Returns the Node below top with the given value.
