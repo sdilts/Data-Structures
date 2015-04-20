@@ -26,6 +26,12 @@ public class BinarySearchTree<T extends Comparable> {
 	    return this.getValue().compareTo(compare.getValue()); 
 	}
 
+	public boolean isLeaf() {
+	    if(left == null && right == null) {
+		return true;
+	    } else return false;
+	}
+
 	public E getValue() {
 	    return value;
 	}

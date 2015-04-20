@@ -45,11 +45,13 @@ public abstract class AbstractBalanceableTree<T extends Comparable> extends Bina
 	if(parent.getLeft().equals(pivot)) {
 	    Node s = pivot.getRight();
 	    pivot.setRight(parent);
+	    parent.setParent(pivot);
 	    parent.setLeft(s);
 	} else {
 	    Node s = pivot.getLeft();
 	    pivot.setLeft(parent);
 	    parent.setRight(s);
+	    parent.setParent(pivot);
 	}
     }
 

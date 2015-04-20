@@ -15,7 +15,7 @@ public class AVLTree<T extends Comparable> extends AbstractBalanceableTree<T> {
 	super();
     }
     
-    public int getHeight(Node n) {
+    protected int getHeight(Node n) {
 	if(n != null) {
 	    if(n instanceof BalNode) {
 		return ((BalNode)n).getAux();
@@ -43,10 +43,7 @@ public class AVLTree<T extends Comparable> extends AbstractBalanceableTree<T> {
 	} else return n.getRight();
     }
 
-    public void insert(T val) {
-	//create node to be inserted
-	Node current = createNode(val);
-	super.insertNode(current);
+    public void balance(Node current) {
 	int oldHeight,newHeight;
 	do {
 	    oldHeight = getHeight(current);
@@ -58,7 +55,28 @@ public class AVLTree<T extends Comparable> extends AbstractBalanceableTree<T> {
 	    computeHeight(current);
 	    newHeight = getHeight(current);
 	    current = current.getParent();
-	} while(newHeight != oldHeight && current != null);;
+	} while(newHeight != oldHeight && current != null);
+
+    }
+
+    @Override
+    public void insert(T val) {
+	//create node to be inserted
+	Node newNode = createNode(val);
+	super.insertNode(newNode);
+	balance(newNode);
+    }
+
+    @Override
+    public boolean remove(T val) {
+	Node remove = lookupNode(root, val);
+	if(super.remove(remove)) {
+	    if(!remove.equals(root)) {
+		//System.out.println("remoing");
+		balance(remove.getParent());
+	    }
+	    return true;
+	} else return false;
     }
 }
 
