@@ -26,6 +26,15 @@ public abstract class AbstractBalanceableTree<T extends Comparable> extends Bina
 	rotate(getNode(val));
     }
 
+    protected void attach(Node parent, Node child, boolean makeLeftChild) {
+	if(child != null) {
+	    child.setParent(parent);
+	}
+	if(makeLeftChild) {
+	    parent.setLeft(child);
+	} else parent.setRight(child);
+    }
+
     protected void rotate(Node pivot) {
 	Node parent = pivot.getParent();
 	Node grandpa = parent.getParent(); //may be null
@@ -34,24 +43,15 @@ public abstract class AbstractBalanceableTree<T extends Comparable> extends Bina
 	    root = pivot;
 	    pivot.setParent(null);
 	} else {
-	    if(grandpa.getLeft().equals(parent)) {
-		grandpa.setLeft(pivot);
-		pivot.setParent(grandpa);
-	    } else {
-		grandpa.setRight(pivot);
-		pivot.setParent(grandpa);
-	    }
+	    attach(grandpa, pivot, parent == grandpa.getLeft());
 	}
-	if(parent.getLeft().equals(pivot)) {
-	    Node s = pivot.getRight();
-	    pivot.setRight(parent);
-	    parent.setParent(pivot);
-	    parent.setLeft(s);
+	//there are no possible duplicat nodes: == is okay
+	if(parent.getLeft() == pivot) {
+	    attach(parent,pivot.getRight(), true);
+	    attach(pivot, parent, false);
 	} else {
-	    Node s = pivot.getLeft();
-	    pivot.setLeft(parent);
-	    parent.setRight(s);
-	    parent.setParent(pivot);
+	    attach(parent, pivot.getLeft(), false);
+	    attach(pivot, parent, true);
 	}
     }
 

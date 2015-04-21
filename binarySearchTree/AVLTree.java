@@ -37,7 +37,7 @@ public class AVLTree<T extends Comparable> extends AbstractBalanceableTree<T> {
 	} else if(getHeight(n.getLeft()) < getHeight(n.getRight())) {
 	    return n.getRight();
 	} else if(n.equals(root)) {
-	    return n.getRight();
+	    return n.getRight(); //doesn't matter
 	} else if(n.equals(n.getLeft().getParent())){
 	    return n.getLeft();
 	} else return n.getRight();
@@ -72,11 +72,9 @@ public class AVLTree<T extends Comparable> extends AbstractBalanceableTree<T> {
 	Node remove = lookupNode(root, val);
 	if(super.remove(remove)) {
 	    if(!remove.equals(root)) {
-		//System.out.println("remoing");
 		balance(remove.getParent());
 	    }
 	    return true;
 	} else return false;
     }
 }
-
