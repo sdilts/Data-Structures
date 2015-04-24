@@ -6,8 +6,6 @@ import java.util.Stack;
 
 /**
  * A Binary Search tree class that stores any single object in an ordered tree.
- * It will not store both a key and value, so consider using an object with a 
- * key and an element whose compareTo method reflects that of its key.
  * 
  * @author sdilts
  */
@@ -83,18 +81,14 @@ public class BinarySearchTree<T extends Comparable> {
     }
 
     /**
-     * Inserts the given element into the tree so that the tree is sorted.
+     * Inserts the given value into the tree so that the tree is in order.
      *
      * @param newValue the value to be added to the tree.
-     */ 
+     */
     public void insert(T value) {
 	insertNode(createNode(value));
     }
 
-    /**
-     * inserts the given node into the tree
-     * @param newNode the node to be inserted
-     */
     protected void insertNode(Node newNode) {
 	if (root == null) {
 	    root = newNode;
@@ -124,6 +118,9 @@ public class BinarySearchTree<T extends Comparable> {
 	size++;
     }
 
+
+	
+
     /**
      * Returns the Node below top with the given value.
      *
@@ -131,7 +128,7 @@ public class BinarySearchTree<T extends Comparable> {
      * @param search the value for which to search for.
      * @return the node with the value of search
      */
-    protected Node lookupNode(Node top, T search) {
+    public Node lookupNode(Node top, T search) {
 	if(top == null) {
 	    return null;
 	} else if(search.compareTo(top.getValue()) < 0) {
@@ -145,8 +142,19 @@ public class BinarySearchTree<T extends Comparable> {
      * Returns the Node with the given value
      * @param search the value for which to search for
      */
-    protected Node getNode(T search) {
+    public Node getNode(T search) {
 	return lookupNode(root, search);
+    }
+
+    /**
+     * Removes the first node with the given value from the tree.
+     *
+     * @param value the value used to find the node to be removed
+     * @return true if an valid node is found and removed
+     */
+    public boolean remove(T value) {
+	Node remove = lookupNode(root, value);
+	return remove(remove);
     }
 
     private void promoteLeft(Node rn) {
@@ -180,7 +188,7 @@ public class BinarySearchTree<T extends Comparable> {
      * @param remove the node to be removed
      * @return true if the node is removed
      */
-    protected boolean remove(Node rn) {
+    public boolean remove(Node rn) {
 	if(rn == null) {
 	    return false;
 	}
@@ -208,18 +216,6 @@ public class BinarySearchTree<T extends Comparable> {
 	    remove(next);
 	}
 	return true;
-    }
-
- 
-    /**
-     * Removes the first element with the given value from the tree.
-     *
-     * @param value the value used to find the node to be removed
-     * @return true if an valid node is found and removed
-     */
-    public boolean remove(T value) {
-	Node remove = lookupNode(root, value);
-	return remove(remove);
     }
 
     /**
@@ -262,12 +258,11 @@ public class BinarySearchTree<T extends Comparable> {
 
     /**
      * Returns an ordered linked list composed of every node below that of the node given. 
-     * Will return null if the given node is null.
+     * Will return null if current is null.
      *
      * @param current the top node of the tree to be given as a linked list
      * @return An ordered linked list of the data in the tree
      */
-    //Note: this method is here for historic value and is not expected to be used:
     public LinkedList<T> getTreeList(Node current) {
 	LinkedList<T> list = new LinkedList<T>();
 	if(current.getLeft() != null) {
@@ -281,7 +276,6 @@ public class BinarySearchTree<T extends Comparable> {
     }
 
     //Should there be a place for a copyToArray() method?
-    //will be implemented when tree implements list
 
     /**
      * Modifies the given array by copying all of the tree's values in order to replace the values already in the array.
@@ -293,10 +287,10 @@ public class BinarySearchTree<T extends Comparable> {
      */
     public void copyToArray(T[] array) {
 	if(array.length < size) {
-	    throw new IllegalArgumentException("array passed to copyToArray(E[]) must be the same size or larger than the size of the tree.");
+	    throw new IllegalArgumentException("array passed to copyToArray(E[]) must be/nthe same size or larger than the size of the tree.");
 	} else {
 	    int index = 0;
-	    Stack stack = new Stack(); //replicate call stack
+	    Stack stack = new Stack();
 	    Node current = root;
 	    while(stack.size() != 0 || current != null) {
 		if(current != null) {
@@ -313,10 +307,10 @@ public class BinarySearchTree<T extends Comparable> {
     }
 
     /**
-     * Returns the number of elements in the tree.
+     * Returns the number of nodes in the tree.
      * @return the size of the tree
      */
-    public int size() {
+    public int getSize() {
 	return size;
     }
 }
