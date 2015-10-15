@@ -11,3 +11,5 @@
 ################
 *.java~
 *.java#
+/TeachingList/.nb-gradle/
+/bin

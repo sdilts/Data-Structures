@@ -5,198 +5,227 @@
  */
 package skipList;
 
-import java.util.NoSuchElementException;
-import java.util.Random;
-import java.util.Deque;
-import java.util.LinkedList;
-/**
- *
- * @author stuart
- * @version 9.15.15
- * @param <K>
- * @param <V>
- **/
-public class SkipList<K extends Comparable<K>, V> {
-    
-    private Node<K,V> head;
-    private int size = 0;
-    private int height = 0;
-    private final Random r;
-    
-    public SkipList() {
-        r = new Random();
-        head = new Node<>(null, null);
-        head.setNext(null);
-    }
-    
-    public void put(K key, V value) {
-        insert(key,value);
-    }
-    /**
-     * Helper method that remov(defun toggle-fullscreen ()
-  "Toggle full screen on X11"
-  (interactive)
-  (when (eq window-system 'x)
-    (set-frame-parameter
-     nil 'fullscreen
-     (when (not (frame-parameter nil 'fullscreen)) 'fullboth))))
 
-(global-set-key [f11] 'toggle-fullscreen)es a single node, and then cleans up after
-     * itself.
-     * @param n Node to be removed
-     */
-    private void removeNode(Node n) {
-        
-    }
-    
-    public void remove(K key) {
-        Node<K,V> found = find(key);
-        if(found.compareTo(key) != 0) {
-            throw new NoSuchElementException();
-        } else {
-            //find() returns the topmost node in a tower:
-        }
-    }
-    
-    public V get(K key) throws NoSuchElementException {
-        Node<K,V> found = find(key);
-        if(found.compareTo(key) != 0) {
-            throw new NoSuchElementException();
-        } else return found.value();
-    }
-    
-    
-    //update nodes around newNode:
-//            if(found.next() != null) {
-//                found.next().setPrev(newNode);
-//            }
-//            found.setNext(newNode);
-//            
+import java.util.Random;
+
+public class SkipList<K extends Comparable<K>, V> {
+
+    private int size;
+    private Node<K,V> root;
+    private int maxHeight;
+    private int height;
+    private Random r;
+
     /**
-     * Inserts a given node after oldNode
-     * @param newNode
-     * @param oldNode
+     * Constructs a Skip list with height 18. This value cannot be
+     * changed after the object is created. See the other constructor
+     * to specify a size.
+     */
+    public SkipList() {
+	//instantiate the root value and set its values to null:
+	//A general guideline for the height is that 2^h = max size of
+	//list. For our purposes, 2^16 = ~65,000 is appropriate.
+	r = new Random();
+	maxHeight = 18;
+	root = new Node<>(null,null, maxHeight);
+    }
+    /**
+     * Constructs a skip list with the height specified by
+     * maxHeight. This value cannot change once the object is created.
+     * @param maxHeight the maximum height of the skip list.
+     */
+    public SkipList(int maxHeight) {
+	//may want to check to see if maxHeight is a reasonable value
+	r = new Random();
+	this.maxHeight = maxHeight;
+	root = new Node<>(null,null,maxHeight);
+    }
+
+   /**
+     * Returns the value stored the by given key. Returns null if the key doesn't exist.
+     * @param key The key used for the search
+     * @return the value stored by <i>key</i>, null if the key doesn't exits.
+     */
+    public V get(K key) {
+	Node<K,V> current = root;
+	for(int i = height; i >= 0; i--) {
+	    while(current.pointers[i] != null &&
+		  current.pointers[i].key.compareTo(key) <= 0) {
+		current = current.pointers[i];
+	    }
+	}
+	if(current.key.compareTo(key) == 0) {
+	    return current.value;
+	} else return null;
+    }
+    /** 
+     * Returns an array of Nodes that is useful for adding and removing elements.
+     * The first element of the returned array will contain a node with the key 
+     * <i>key</i> if a node exists with that key.
+     * @param key
+     * @return
+     */
+    private Node[] findAction(K key) {
+	Node<K,V> current = root;
+	Node[] tower = new Node[maxHeight];
+	for(int i = height; i >= 0; i--) {
+	    while(current.pointers[i] != null && current.pointers[i].key.compareTo(key) < 0) {
+		current = current.pointers[i];
+	    }
+	    tower[i] = current;
+	}
+	return tower;		
+    }
+    /**
+     * Determines how far up the tower a node should be inserted, based on probability.
      * @return 
      */
-    private Node insertNode(Node newNode, Node oldNode) {
-        //update nodes around newNode:r
-        if(oldNode.next() != null) {
-            oldNode.next().setPrev(newNode);
-        }
-        oldNode.setNext(newNode);
-        return newNode;
-    }
-    
-    public void insert(K key, V value) {
-        Node <K,V> found = find(key);
-        if(found.compareTo(key) != 0) {
-            //make sure you are at the bottom of the lists:
-            while(found.down() != null) {
-                found = found.down();
-            }
-            //create new node that is connected where it needs to be:
-            Node<K,V> newNode = insertNode(new Node<>(key, value, found, found.next()),
-                                           found);
-            int nodeHeight = 0;
-            while(nodeHeight < 3 && r.nextBoolean()) { //change nodeHeight before release based on known data size
-                while(found.prev() != null && found.up() == null) { //find the next tallest list
-                    found = found.prev(); 
-                }
-                if(found.equals(head)) {
-                    Node newHead = new Node(null, null);
-                    newHead.setDown(head);
-                    head.setUp(newHead);
-                    head = newHead;
-                    found = newHead;
-                    height++;
-                } else {
-                    found = found.up();
-                }
-                Node tower = insertNode(new Node<>(key, value, found, found.next()),
-                                     found);
-                tower.setDown(newNode);
-                newNode.setUp(tower);
-                newNode = tower;
-                nodeHeight++;
-            }
-            size++;
-        } else found.setValue(value);
+    private int determineLevel() {
+	int random = r.nextInt();
+	int lvl = 1;
+	while(lvl < maxHeight && ((random >> lvl) & 1) == 1) {
+	    lvl++;
+	}
+	return lvl;
     }
     /**
-     * Returns either the node with the supplied key, or if the key doesn't exist, 
-     * the node with the next lowest key value. This is useful when adding nodes,
-     * as it will return the node whose pointers need to be changed to add the new
-     * node. Thus, if searching for a specific key, the returned nodes' key will
-     * have to be compared to supplied key.
-     * @param key the key being searched for 
-     * @return the node that contains key, or the node with the next lowest key in the list
+     * Inserts the value <i>value</i> into the list using the given key. 
+     * Overwrites the previous value if it existed.
+     * @param key
+     * @param value
+     * @return the previous value assigned to the supplied key, null otherwise.
      */
-    private Node find(K key) {
-        Node<K,V> current = head;
-	//Deque stack = new LinkedList();
-        while(true) {
-            if(current.next() != null) {
-                int compare = current.next().compareTo(key);
-                if(compare == 0) {
-                    return new Pack(stack, current);
-                } else if(compare > 0) {
-		    //stack.push(current);
-                    current = current.next();
-                } else if(current.down() != null) {
-                    current = current.down();
-                } else return current; //new Pack(stack, current)
-            } else if(current.down() != null) {
-                current = current.down();
-            } else return current; //new Pack(stack, current);
+    public V put(K key, V value) {
+	Node<K,V>[] tower = findAction(key);
+	if(tower[0].pointers[0] != null && tower[0].pointers[0].key.compareTo(key) == 0) {
+	    V old = tower[0].pointers[0].value;
+	    tower[0].pointers[0].value = value;
+	    return old;
+	} else {
+	    int lvl = determineLevel();
+	    if(lvl > height) {
+		//int count = 0;
+		for(int i = height; i < lvl && i < maxHeight; i++) {
+		    tower[i] = root;
+		    height++; //update height
+		}
+		//height += count;
+	    }
+	    Node<K,V> newNode = new Node<>(key, value, lvl);
+	    for(int i = 0; i < lvl; i++) {
+		newNode.pointers[i] = tower[i].pointers[i];
+		tower[i].pointers[i] = newNode;
+	    }
+	    size++;
+	    return null;
+	}
+    }
+    /**
+     * Removes the node with the given key value and returns its value.
+     * @param key
+     * @return 
+     */
+    public V remove(K key) {
+	Node[] tower = findAction(key);
+	Node<K,V> n = tower[0].pointers[0];
+	if(n != null && n.key.compareTo(key) == 0) {
+	    for(int i = 0; i < n.pointers.length; i++) {
+		tower[i].pointers[i] = n.pointers[i];
+	    }
+            size--;
+	    while(height > 0 && root.pointers[height] == null) {
+		height--;
+	    }
+            return n.value;
+	} else return null;
+    }
+     
+    public void printTower() {
+	Node current = root;
+        for (Node pointer : current.pointers) {
+            System.out.print("[" + current.key + "]");
         }
+System.out.println();
+	current = current.pointers[0];
+	while(current != null) {
+            for (Node pointer : current.pointers) {
+                System.out.print("[" + current.key + "]");
+            }
+	    System.out.println();
+	    current = current.pointers[0];
+	}
     }
     
     public void printList() {
-        Node current = head;
-        while(current != null) {
-            Node printed = current;
+        //Node current = root;
+        for(int i = root.pointers.length-1; i >= 0; i--) {
+            Node printed = root.pointers[i];
             while(printed != null) {
-                System.out.printf("[%s]", printed.key());
-                printed = printed.next();
+                System.out.printf("[%s]", printed.key);
+                printed = printed.pointers[i];
             }
-            System.out.println();
-            current = current.down();
+            if(root.pointers[i] != null) System.out.println();
         }
-        System.out.println();
     }
-    
-    public void printTower() {
-        Node current = head;
-        while(current.down() != null) {
-            current = current.down();
-        }
-        
-        while(current != null) {
-            Node printed = current;
-            while(printed != null) {
-                System.out.printf("[%s]", printed.key());
-                printed = printed.up();
-            }
-            System.out.print("\n|\n");
-            current = current.next();
-        }
-        System.out.println();
+    /**
+     * Returns the size of the skip list:
+     * @return 
+     */
+    public int size() {
+	return size;
     }
-    
-    public int size() {return size;}
-    
-    public int height() {return height;}
-    
-    // protected class Pack<F,S> {
-    // 	private F first;
-    // 	private S second;
 
-    // 	public Pack(F first, S second) {
-    // 	    this.second = second;
-    // 	    this.first = first;
-    // 	}
+    protected class Node<K extends Comparable<K>, V> {
+	public Node<K,V>[] pointers;
+	public V value;
+	public K key;
 
-    // 	public F first() {return first;}
-    // 	public S second() {return second;}
-    // }
+	public Node(K key, V value) {
+	    this.key = key;
+	    this.value = value;
+	}
+ 
+	public Node(K key, V value, int level) {
+	    this.key = key;
+	    this.value = value;
+	    pointers = new Node[level];
+	}
+   
+    }
 }
+//THIS CODE NOT NEEDED: KEPT FOR REFERENCE PUROPSES
+/*
+   private class Pack<I,T> {
+	public I first;
+	public T second;
+	public Pack(I first, T second) {
+	    this.first = first;
+	    this. second = second;
+	}
+   }
+private Node<K,V> find(K key) {
+	Node<K,V> current = root;
+	int curHeight = height; //array is zero indexed
+	while(true) {
+	    if(current.pointers[curHeight] != null) {
+		int compare =
+		    current.pointers[curHeight].key.compareTo(key);
+		if(compare == 0) {
+		    return current.pointers[curHeight];
+		} else if(compare < 0) {
+		    current = current.pointers[curHeight];
+		} else if(curHeight > 0) {
+		    curHeight--;
+		} else return current;
+	    } else if(curHeight > 0) {
+		curHeight--;
+	    } else return current;
+	}
+}
+public V get(K key) {
+	Node<K,V> n = find(key);
+	if(n.key.compareTo(key) == 0) {
+	    return n.value;
+	} else return null;
+}
+*/
