@@ -11,5 +11,5 @@
 ################
 *.java~
 *.java#
-/TeachingList/.nb-gradle/
-/build
+
+build/
