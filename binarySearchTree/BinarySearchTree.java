@@ -206,14 +206,14 @@ public class BinarySearchTree<T extends Comparable> {
 		    rn.getParent().setLeft(null);
 		}
 	    }
-	} else { //node is full:
+	} else { //node is full: has two children
 	    Node left = rn.getLeft();
 	    Node next = left;
-	    while(next.getRight() != null) {
+	    while(next.getRight() != null) { //get rightmost child:
 		next = next.getRight();
 	    }
-	    rn.setValue(next.getValue());
-	    remove(next);
+	    rn.setValue(next.getValue()); 
+	    remove(next); //remove repeated value
 	}
 	return true;
     }
