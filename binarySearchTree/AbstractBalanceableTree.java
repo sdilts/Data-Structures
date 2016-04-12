@@ -1,8 +1,18 @@
-package binarySearchTree;
+/**>
+ * A balanced AVL binary tree
+ *
+ * @author Dilts, Dilts, and Stowe
+ */
+package hashTable.binarySearchTree;
 
-public abstract class AbstractBalanceableTree<T extends Comparable> extends BinarySearchTree<T> {
+/**
+ *
+ * @author stuart
+ * @param <T>
+ */
+public abstract class AbstractBalanceableTree<T extends Comparable<T>> extends BinarySearchTree<T> {
         //class for extending our node functionality:
-    protected static class BalNode<E extends Comparable> extends Node<E> {
+    protected static class BalNode<E extends Comparable<E>> extends Node<E> {
     	//extra data needed for ballancing:
     	int aux = 0;
 
@@ -20,13 +30,19 @@ public abstract class AbstractBalanceableTree<T extends Comparable> extends Bina
     }
     //----------END OF BalNode CLASS---------
     
+    /**
+     *
+     * @param e
+     * @return
+     */
+    @Override
     protected abstract BalNode<T> createNode(T e);
 
     public void rotateNode(T val) {
 	rotate(getNode(val));
     }
 
-    protected void attach(Node parent, Node child, boolean makeLeftChild) {
+    protected void attach(Node<T> parent, Node<T> child, boolean makeLeftChild) {
 	if(child != null) {
 	    child.setParent(parent);
 	}
@@ -35,9 +51,9 @@ public abstract class AbstractBalanceableTree<T extends Comparable> extends Bina
 	} else parent.setRight(child);
     }
 
-    protected void rotate(Node pivot) {
-	Node parent = pivot.getParent();
-	Node grandpa = parent.getParent(); //may be null
+    protected void rotate(Node<T> pivot) {
+	Node<T> parent = pivot.getParent();
+	Node<T> grandpa = parent.getParent(); //may be null
 
 	if(grandpa == null) {
 	    root = pivot;
@@ -55,7 +71,7 @@ public abstract class AbstractBalanceableTree<T extends Comparable> extends Bina
 	}
     }
 
-    public Node restructure(Node pivot) {
+    public Node<T> restructure(Node<T> pivot) {
 	//check nodes are in straigth line:
 	//if both statments are true or if both statements are false:
 	if((pivot.equals(pivot.getParent().getRight()))                               //if pivot is to the right of parent

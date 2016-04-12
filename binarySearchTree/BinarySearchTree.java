@@ -1,19 +1,27 @@
 
-package binarySearchTree;
+package hashTable.binarySearchTree;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.Queue;
 
 /**
  * A Binary Search tree class that stores any single object in an ordered tree.
+ * Allows duplicates: the program counts the number of times a certain value with
+ * the same key value is inserted into tree. Not safe for objects that are fundamentally
+ * different yet have the same value when compareTo is called on them.
  * 
- * @author sdilts
+ * @author Dilts, Dilts, and Stowe
+ * @param <T> Comparable object that serves as both the value being stored and the key
  */
-public class BinarySearchTree<T extends Comparable> {
+public class BinarySearchTree<T extends Comparable<T>> implements Iterable<T>{
 
-    protected static class Node<E extends Comparable> {
+    protected static class Node<E extends Comparable<E>> implements Comparable<E> {
 
 	private E value;
+	//var can be used to hold many values with the same key: not
+	//actually needed, but iterating will break:
+	private static final int count = 1;
 	private Node<E> left;
 	private Node<E> right;
 	private Node<E> parent;
@@ -22,14 +30,17 @@ public class BinarySearchTree<T extends Comparable> {
 	    this.value = value;
 	}
 
-	public int compareTo(Node compare) {
-	    return this.getValue().compareTo(compare.getValue()); 
+	public int compareTo(Node<E> compare) {
+	    return this.getValue().compareTo((E) compare.getValue()); 
 	}
 
+        @Override
+	public int compareTo(E compare) {
+            return this.getValue().compareTo(compare);
+        }
+
 	public boolean isLeaf() {
-	    if(left == null && right == null) {
-		return true;
-	    } else return false;
+            return left == null && right == null;
 	}
 
 	public E getValue() {
@@ -38,6 +49,14 @@ public class BinarySearchTree<T extends Comparable> {
     
 	public void setValue(E value) {
 	    this.value = value;
+	}
+
+	// public void plusCount() { //see note above on the count variable
+	//     count++;
+	// }
+
+	public int getCount() {
+	    return count;
 	}
 
 	public void setLeft(Node<E> left) {
@@ -56,22 +75,23 @@ public class BinarySearchTree<T extends Comparable> {
 	    return right;
 	}
 
-	public void setParent(Node parent) {
+	public void setParent(Node<E> parent) {
 	    this.parent = parent;
 	}
 
 	public Node<E> getParent() {
 	    return parent;
 	}
+
     }//------------END OF NODE CLASS------------
 
     //allows us to change behavior of general methods:
     protected Node<T> createNode(T e) {
-	return new Node<T>(e);
+	return new Node<>(e);
     }
 
     protected Node<T> root;
-    private int size;
+    protected int size;
 
     /**
      * Creates an empty binary search tree
@@ -81,22 +101,37 @@ public class BinarySearchTree<T extends Comparable> {
     }
 
     /**
-     * Inserts the given value into the tree so that the tree is in order.
-     *
-     * @param newValue the value to be added to the tree.
+     * Inserts the given value into the tree so that the tree is in
+     * order. Duplicate values are not allowed; the method will return
+     * false if the value could not be inserted.
+     * 
+     * @param value the value to be inserted into the tree.
+     * @return true if the value could be inserted
      */
-    public void insert(T value) {
-	insertNode(createNode(value));
+    public boolean add(T value) {
+        return insertValue(value) != null;
     }
 
-    protected void insertNode(Node newNode) {
-	if (root == null) {
+    /**
+     * Inserts a node with the given value into the tree, and returns
+     * the inserted node. If the node cannot be inserted, the method
+     * returns a null value.
+     * @param value the key value of the node to be inserted
+     * @return the node that was inserted. Null if no node was inserted
+     **/
+    protected Node<T> insertValue(T value) {
+	Node<T> newNode = createNode(value);
+        if (root == null) {
 	    root = newNode;
 	} else {
-	    Node currentNode = root;
+	    Node<T> currentNode = root;
 	    boolean placed = false;
 	    while (!placed) {
-		if (newNode.compareTo(currentNode) < 0) {
+		//if we have already have a node of value:
+		if(newNode.compareTo(currentNode) == 0) {
+		    return null;
+		    //placed = true;
+		} else if (newNode.compareTo(currentNode) < 0) {
 		    if (currentNode.getLeft() == null) {
 			currentNode.setLeft(newNode);
 			currentNode.getLeft().setParent(currentNode);
@@ -115,11 +150,10 @@ public class BinarySearchTree<T extends Comparable> {
 		}
 	    }
 	}
-	size++;
-    }
-
-
-	
+	size++; //always will succeed at inserting an node if this
+	        //point is reached
+	return newNode;
+    }	
 
     /**
      * Returns the Node below top with the given value.
@@ -128,36 +162,42 @@ public class BinarySearchTree<T extends Comparable> {
      * @param search the value for which to search for.
      * @return the node with the value of search
      */
-    public Node lookupNode(Node top, T search) {
-	if(top == null) {
-	    return null;
-	} else if(search.compareTo(top.getValue()) < 0) {
-	    return lookupNode(top.getLeft(), search);
-	} else if(search.compareTo(top.getValue()) > 0) {
-	    return lookupNode(top.getRight(), search);
-	} else return top;
+    protected Node<T> lookupNode(Node<T> top, T search) {
+        
+        while(top != null && search.compareTo(top.getValue()) != 0) {
+            if(search.compareTo(top.getValue()) < 0) {
+                top = top.getLeft();
+            } else {
+                top = top.getRight();
+            }
+        }
+        return top;
     }	    
+
+    public boolean contains(T search) {
+	return lookupNode(root, search) != null;
+    }
 
     /**
      * Returns the Node with the given value
      * @param search the value for which to search for
+     * @return node with the specified value. Null if not found.
      */
-    public Node getNode(T search) {
+    public Node<T> getNode(T search) {
 	return lookupNode(root, search);
     }
 
     /**
      * Removes the first node with the given value from the tree.
-     *
-     * @param value the value used to find the node to be removed
-     * @return true if an valid node is found and removed
+     * @param value
+     * @return 
      */
     public boolean remove(T value) {
-	Node remove = lookupNode(root, value);
+	Node<T> remove = lookupNode(root, value);
 	return remove(remove);
     }
 
-    private void promoteLeft(Node rn) {
+    private void promoteLeft(Node<T> rn) {
 	if(rn == root) {
 	    root = rn.getLeft();
 	    root.setParent(null);
@@ -169,7 +209,7 @@ public class BinarySearchTree<T extends Comparable> {
 	rn.getLeft().setParent(rn.getParent());
     }
 
-    private void promoteRight(Node rn) {
+    private void promoteRight(Node<T> rn) {
 	if(rn == root) {
 	    root = rn.getRight();
 	    root.setParent(null);
@@ -185,10 +225,10 @@ public class BinarySearchTree<T extends Comparable> {
      * Removes the given node from the tree.
      * The tree will remain sorted.
      *
-     * @param remove the node to be removed
+     * @param rn the node to be removed
      * @return true if the node is removed
      */
-    public boolean remove(Node rn) {
+    public boolean remove(Node<T> rn) {
 	if(rn == null) {
 	    return false;
 	}
@@ -206,28 +246,60 @@ public class BinarySearchTree<T extends Comparable> {
 		    rn.getParent().setLeft(null);
 		}
 	    }
-	} else { //node is full: has two children
-	    Node left = rn.getLeft();
-	    Node next = left;
-	    while(next.getRight() != null) { //get rightmost child:
+	} else { //node is full:
+	    Node<T> left = rn.getLeft();
+	    Node<T> next = left;
+	    while(next.getRight() != null) {
 		next = next.getRight();
 	    }
-	    rn.setValue(next.getValue()); 
-	    remove(next); //remove repeated value
+	    rn.setValue((T) next.getValue());
+	    remove(next);
 	}
+	size -= rn.getCount();
 	return true;
     }
+    
+    public void remove(T low, T high) {
+        Queue<Node<T>> queue = new LinkedList<>();
+        Stack<Node<T>> stackie = new Stack<>();
+	
+        if (root == null) {
+            return;
+        }
+	
+        queue.clear();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+
+            Node<T> node = queue.remove();
+
+            if (node.compareTo(low) >= 0 && node.compareTo(high) <= 0) {
+                stackie.add(node);
+            }
+            if (node.getLeft() != null){// && node.compareTo(low) > 0) {
+                queue.add(node.getLeft());
+            }
+            if (node.getRight() != null){// && node.compareTo(high) < 0) {
+                queue.add(node.getRight());
+            }
+
+        }
+
+        while (!stackie.isEmpty()) {
+            remove(stackie.pop());
+        }
+    }    
 
     /**
      * Changes the value of the node identified with toChange to the value of newValue.
      * Will do nothing if a node with the value of toChange is not found.
-     * This may make the tree usorted, so be careful.
+     * This may make the tree unsorted, so be careful.
      *
      * @param toChange the current value of the node that is to be modified
      * @param newValue the value that the node will be changed to.
      */
     public void modify(T toChange, T newValue) {
-	Node mod = lookupNode(root, toChange);
+	Node<T> mod = lookupNode(root, toChange);
 	if(mod != null) {
 	    mod.setValue(newValue);
 	}
@@ -241,7 +313,7 @@ public class BinarySearchTree<T extends Comparable> {
      */
     public boolean isBST() {
 	LinkedList<T> treeList =  getTreeList(root);
-	Iterator it = treeList.iterator();
+	Iterator<T> it = treeList.iterator();
 	if(it.hasNext()) {
 	    T prev = (T) it.next();
 	    while(it.hasNext()) {
@@ -263,8 +335,8 @@ public class BinarySearchTree<T extends Comparable> {
      * @param current the top node of the tree to be given as a linked list
      * @return An ordered linked list of the data in the tree
      */
-    public LinkedList<T> getTreeList(Node current) {
-	LinkedList<T> list = new LinkedList<T>();
+    public LinkedList<T> getTreeList(Node<T> current) {
+	LinkedList<T> list = new LinkedList<>();
 	if(current.getLeft() != null) {
 	    list.addAll(getTreeList(current.getLeft()));
 	}
@@ -290,16 +362,18 @@ public class BinarySearchTree<T extends Comparable> {
 	    throw new IllegalArgumentException("array passed to copyToArray(E[]) must be/nthe same size or larger than the size of the tree.");
 	} else {
 	    int index = 0;
-	    Stack stack = new Stack();
-	    Node current = root;
+	    Stack<Node<T>> stack = new Stack<>();
+	    Node<T> current = root;
 	    while(stack.size() != 0 || current != null) {
 		if(current != null) {
 		    stack.push(current);
 		    current = current.getLeft();
 		} else {
-		    current = (Node) stack.pop();
-		    array[index] = (T) current.getValue();
-		    index++;
+		    current = stack.pop();
+		    for(int i = 0; i < current.getCount(); i++) {
+			array[index] = (T) current.getValue();
+			index++;
+		    }
 		    current = current.getRight();
 		}
 	    }
@@ -310,7 +384,79 @@ public class BinarySearchTree<T extends Comparable> {
      * Returns the number of nodes in the tree.
      * @return the size of the tree
      */
-    public int getSize() {
+    public int size() {
 	return size;
+    }
+
+    // public int getOcurrances(T value) {
+    //     Node n = getNode(value);
+    //     if(n != null) 
+    //         return n.getCount();
+    //     else
+    //         return 0;
+    // }
+    
+    @Override
+    public Iterator<T> iterator() {
+        return new InorderIterator<>();
+    }
+
+    private class InorderIterator<T extends Comparable<T>> implements Iterator<T> {
+
+        Node<T> next;
+        int steps = 1;
+        int times = 0;
+
+	@SuppressWarnings("unchecked")
+	public InorderIterator() {
+	    
+	    next = (Node<T>) root;
+            if (next != null) {
+                while (next.getLeft() != null) {
+                    next = next.getLeft();
+                }
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return size != times;
+        }
+
+        @Override
+        public T next() {
+            Node<T> n = next;
+
+            if (steps != n.getCount()) {
+                steps++;
+                times++;
+                return n.getValue();
+            } else if (size != times) {
+                
+                //go right one and left as far as possible
+                if (next.getRight() != null) {
+                    next = next.getRight();
+                    while (next.getLeft() != null) {
+                        next = next.getLeft();
+                    }
+                    //else if we are coming from left
+                } else if (next != root && next == next.getParent().getLeft()) {
+                    next = next.getParent();
+                    //else if we are coming from right
+                } else {
+                    //move up while we are coming from right
+                    while (next != root && next == next.getParent().getRight()) {
+                        next = next.getParent();
+                    }
+                    //go up one parent
+                    next = next.getParent();
+                }
+                
+            } 
+            times++;
+            steps = 1;
+            
+            return (T) n.getValue();
+        }
     }
 }
