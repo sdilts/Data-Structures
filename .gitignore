@@ -6,10 +6,19 @@
 *.exe
 *.o
 *.so
+*.jar
 
 # Backup files #
 ################
 *.java~
 *.java#
+*.gradle~
 
+# Generated Files #
+###################
+.emacs.desktop
+.gradle
+.nb-gradle
 build/
+/Heap/Heap/.nb-gradle/
+/Heap/.nb-gradle/
